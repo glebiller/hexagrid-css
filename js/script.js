@@ -33,19 +33,6 @@
         return columns;
     }
     
-    function processFlippingQueue(queue, flipped) {
-        var index, flipDirection = flipped ? '0deg' : '180deg',
-            nextFlips = queue.shift();
-        for (index in nextFlips) {
-            FLIPS[nextFlips[index]]
-                .css('transform', 'rotate3d(1, 1, 0, ' + flipDirection + ')')
-                .data('flipped', !flipped);
-        }
-        if (queue.length) {
-            setTimeout(processFlippingQueue, 100, queue, flipped);
-        }
-    }
-    
     function getTileIndex(mouseX, mouseY) {
         var lineX = mouseX + HALF_TILE_HEIGHT,
             column = Math.floor(lineX / TILE_PARTIAL_WIDTH),
@@ -68,11 +55,25 @@
         return (column * ROWS_SIZE) + row;
     }
     
+    function flipTile(tile, flipped) {
+        tile.css('transform', 'rotate3d(1, 1, 0, ' + (flipped ? '0deg' : '180deg') + ')')
+            .data('flipped', !flipped);
+    }
+    
+    function processFlippingQueue(queue, flipped) {
+        var index, nextFlips = queue.shift();
+        for (index in nextFlips) {
+            flipTile(FLIPS[nextFlips[index]], flipped);
+        }
+        if (queue.length) {
+            setTimeout(processFlippingQueue, 100, queue, flipped);
+        }
+    }
+    
     function setTileHideTimeout() {
         var previousTile = FLIPS[PREVIOUS_TILE_INDEX];
         previousTile.data('hideDelay', setTimeout(function() {
-            previousTile.css('transform', 'rotate3d(1, 1, 0, 0deg)')    
-                .data('flipped', false);
+            flipTile(previousTile, true);
         }, TILE_HIDE_DELAY));
     }
     
@@ -83,15 +84,14 @@
         }
     }
     
-    function flipTileWithEvent(e) {
+    function flipTilesWithEvent(e) {
         var currentIndex = getTileIndex(e.pageX, e.pageY),
             currentTile = FLIPS[currentIndex];
         if (PREVIOUS_TILE_INDEX && PREVIOUS_TILE_INDEX !== currentIndex) {
             setTileHideTimeout();
         }
         clearTileHideTimeout(currentTile);
-        currentTile.css('transform', 'rotate3d(1, 1, 0, 180deg)')
-                .data('flipped', true);
+        flipTile(currentTile, false);
         PREVIOUS_TILE_INDEX = currentIndex;
         return false;
     }
@@ -114,9 +114,9 @@
             newHtml = $(this).data(mouseDrawing ? 'stop' : 'start');
         $(this).toggleClass('drawing', mouseDrawing).html(newHtml);
         if (mouseDrawing) {
-            $('#flips-container').bind('mouseover', flipTileWithEvent);
+            $('#flips-container').bind('mouseover', flipTilesWithEvent);
         } else {
-            $('#flips-container').unbind('mouseover', flipTileWithEvent);
+            $('#flips-container').unbind('mouseover', flipTilesWithEvent);
             setTileHideTimeout();
         }
     }).on('click', '#resetBtn', function(e) {
@@ -125,7 +125,7 @@
                 return;
             }
             clearTileHideTimeout($(this));
-            $(this).css('transform', 'rotate3d(1, 1, 0, 0deg)');
+            flipTile($(this), true);
         });
     }).ready(function() {
         $('#viewport').css({
