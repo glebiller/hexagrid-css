@@ -1,4 +1,4 @@
-var Grid = function(viewport, tileWidth, tileHeight) {
+var Grid = function(viewport, tileWidth, tileHeight, tileHideDelay) {
     this.container = null;
     this.tiles = [];
     this.tileWidth = tileWidth;
@@ -8,6 +8,8 @@ var Grid = function(viewport, tileWidth, tileHeight) {
     this.quarterTileHeight = tileHeight / 4;
     this.numberOfRows = Math.round(viewport.height() / this.tileHeight) + 1;
     this.numberOfColumns = Math.round(viewport.width() / this.threeQuarterTileWidth) + 1;
+    this.tileHideDelay = tileHideDelay;
+    this.selectedTileIndex = null;
     var w, h;
     for (w = 0; w < this.numberOfColumns; ++w) {
         for (h = 0; h < this.numberOfRows; ++h) {
@@ -52,7 +54,7 @@ Grid.prototype.processFlippingQueue = function(queue, flipped) {
     }
 };
 
-Grid.prototype.handleClick = function(event) {
+Grid.prototype.modeClicking = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY),
         currentTile = this.tiles[currentIndex],
         modifier = parseInt(currentTile.modifier, 10),
@@ -63,10 +65,33 @@ Grid.prototype.handleClick = function(event) {
         ];
     currentTile.flipped && queue.reverse();
     this.processFlippingQueue(queue, currentTile.flipped);
-    return false;
+    return event.preventDefault();
 };
 
-Grid.prototype.generateInside = function(container) {
+Grid.prototype.modeDrawing = function(event) {
+    var currentIndex = this.getTileIndex(event.pageX, event.pageY),
+        currentTile = this.tiles[currentIndex];
+    if (this.selectedTileIndex && this.selectedTileIndex !== currentIndex) {
+        this.tiles[this.selectedTileIndex].setHideTimeout(this.tileHideDelay);
+    }
+    if (!currentTile.flipped) {
+        currentTile.flip();
+    }
+    this.selectedTileIndex = currentIndex;
+    return event.preventDefault();
+};
+
+Grid.prototype.reset = function() {
+    $(this.tiles).each(function() {
+        if (!this.flipped) {
+            return;
+        }
+        this.clearHideTimeout().flip();
+    });
+    return this;
+};
+
+Grid.prototype.generate = function(container) {
     this.container = container;
     var columns = [], w, h;
     for (w = 0; w < this.numberOfColumns; ++w) {
@@ -78,6 +103,6 @@ Grid.prototype.generateInside = function(container) {
     this.container.css({
         width: this.numberOfColumns * this.threeQuarterTileWidth,
         height: this.numberOfRows * this.tileHeight
-    }).html(columns).click($.proxy(this.handleClick, this));
+    }).html(columns);
     return this;
 };

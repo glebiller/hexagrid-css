@@ -9,47 +9,63 @@ body {
     margin: 0;
     padding: 0;
     color: #ECF0F1;
-    background-color: #2c3e50;
+    background-color: #2C3E50;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-#help {
-    text-align: center;
-    background: #34495e;
-    border-radius: 6px;
-    position: absolute;
-    padding: 10px;
-    top: 10px;
-    right: 10px;
-    width: 180px;
-    z-index: 10;
-}
-#help h1 {
-    font-size: 28px;
-    margin: 10px 0;
-}
-#help a {
-    color: #3498DB;
+a {
+    color: #ECF0F1;
     text-decoration: none;
     display: block;
     margin-bottom: 10px;
     padding: 10px;
-    background: #ECF0F1;
+    background: #3498DB;
     line-height: 18px;
     font-size: 18px;
     border-radius: 6px;
     text-align: center;
     transition: 0.25s;
 }
-#help a:hover {
+a:hover {
     background: #cacfd2;
 }
-#help a:active {
+a:active {
     background: #a1a6a9;
+}
+a.active {
+    color: #3498DB;
+    background: #ECF0F1;
+}
+a.active:hover {
+    background: #cacfd2;
+}
+a.active:active {
+    background: #a1a6a9;
+}
+#menu {
+    z-index: 200;
+    text-align: center;
+    background: #2C3E50;
+    border-radius: 6px;
+    position: absolute;
+    padding: 10px;
+    top: 10px;
+    right: 10px;
+    width: 180px;
+}
+#menu h1 {
+    font-size: 28px;
+    margin: 10px 0;
+}
+#menu hr {
+    margin: 0 0 10px 0;
+    color: #ECF0F1;
+    background: #ECF0F1;
+    border: 1px solid #ECF0F1;
 }
 #viewport {
     overflow: hidden;
 }
-#flips-container {
+#grid {
     user-select: none;
     margin: -44px 0 0 -44px;
 }
