@@ -1,4 +1,3 @@
-var TILE_HIDE_DELAY = 5000;
 var Tile = function(width, height, modifier) {
     this.tile = $(
         '<div class="flip" data-flipped="false" data-modifier="'
@@ -22,6 +21,7 @@ Tile.prototype.setFlipped = function(flipped) {
     this.flipped = flipped;
     return this;
 };
+
 Tile.prototype.setHideTimeout = function (hideDelay) {
     var self = this;
     this.hideTimeout = setTimeout(function() {
@@ -29,9 +29,11 @@ Tile.prototype.setHideTimeout = function (hideDelay) {
     }, hideDelay);
     return this;
 };
+
 Tile.prototype.clearHideTimeout = function() {
     clearTimeout(this.hideTimeout);
     this.hideTimeout = null;
+    return this;
 };
 
 Tile.prototype.flip = function() {
