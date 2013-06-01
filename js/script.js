@@ -1,7 +1,6 @@
 (function () {
     "use strict";
-    var VIEWPORT = $(window),
-        PREVIOUS_TILE_INDEX = null,
+    var VIEWPORT = $(window), PREVIOUS_TILE_INDEX = null,
         TILE_HIDE_DELAY = 5000, TILE_WIDTH = 100, TILE_HEIGHT = 88,
         GRID = new Grid(VIEWPORT, TILE_WIDTH, TILE_HEIGHT);
     

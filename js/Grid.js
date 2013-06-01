@@ -1,4 +1,5 @@
 var Grid = function(viewport, tileWidth, tileHeight) {
+    this.container = null;
     this.tiles = [];
     this.tileWidth = tileWidth;
     this.threeQuarterTileWidth = tileWidth * 3 / 4;
@@ -63,6 +64,7 @@ Grid.prototype.handleClick = function(event) {
 };
 
 Grid.prototype.generateInside = function(container) {
+    this.container = container;
     var columns = [], w, h;
     for (w = 0; w < this.numberOfColumns; ++w) {
         columns[w] = $('<div class="flips"></div>');
@@ -70,8 +72,8 @@ Grid.prototype.generateInside = function(container) {
             columns[w].append(this.tiles[(w * this.numberOfRows) + h].tile);
         }
     }
-    container.css({
-        width: this.numberOfColumns * this.tilePartialWidth,
+    this.container.css({
+        width: this.numberOfColumns * this.threeQuarterTileWidth,
         height: this.numberOfRows * this.tileHeight
     }).html(columns).click($.proxy(this.handleClick, this));
     return this;

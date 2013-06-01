@@ -25,7 +25,7 @@ Tile.prototype.setFlipped = function(flipped) {
 Tile.prototype.setHideTimeout = function (hideDelay) {
     var self = this;
     this.hideTimeout = setTimeout(function() {
-        self.setFlipped(false).flip();
+        self.setFlipped(true).flip();
     }, hideDelay);
     return this;
 };
