@@ -10,10 +10,11 @@ var Grid = function(viewport, tileWidth, tileHeight, tileHideDelay) {
     this.numberOfColumns = Math.round(viewport.width() / this.threeQuarterTileWidth) + 1;
     this.tileHideDelay = tileHideDelay;
     this.selectedTileIndex = null;
-    var w, h;
+    var w, h, tile;
     for (w = 0; w < this.numberOfColumns; ++w) {
         for (h = 0; h < this.numberOfRows; ++h) {
-            this.tiles[(w * this.numberOfRows) + h] = new Tile(this.tileWidth, this.tileHeight, w % 2 ? 0 : 1);
+            tile = new Tile(this.numberOfRows, w, h, this.tileWidth, this.tileHeight);
+            this.tiles[tile.index] = tile;
         }
     }
     return this;
@@ -50,7 +51,7 @@ Grid.prototype.processFlippingQueue = function(queue, flipped) {
         }
     });
     if (queue.length) {
-        setTimeout($.proxy(this.processFlippingQueue, this), 100, queue, flipped);
+        setTimeout($.proxy(this.processFlippingQueue, this, queue, flipped), 100);
     }
 };
 
@@ -58,9 +59,9 @@ Grid.prototype.modeClicking = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY),
         currentTile = this.tiles[currentIndex],
         queue = [
-            [currentIndex + 1, currentIndex - this.numberOfRows + currentTile.modifier],
-            [currentIndex + this.numberOfRows + currentTile.modifier, currentIndex, currentIndex - this.numberOfRows + currentTile.modifier - 1],
-            [currentIndex + this.numberOfRows + currentTile.modifier - 1, currentIndex - 1]
+            [currentTile.south, currentTile.southWest],
+            [currentTile.southEast, currentIndex, currentTile.northWest],
+            [currentTile.northEast, currentTile.north]
         ];
     currentTile.flipped && queue.reverse();
     this.processFlippingQueue(queue, currentTile.flipped);
@@ -69,19 +70,18 @@ Grid.prototype.modeClicking = function(event) {
 
 Grid.prototype.modeDrawing = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY);
-    if (this.selectedTileIndex === currentIndex) {
-        return;
+    if (this.selectedTileIndex !== currentIndex) {
+        var currentTile = this.tiles[currentIndex];
+        if (this.selectedTileIndex) {
+            this.tiles[this.selectedTileIndex].setHideTimeout(this.tileHideDelay);
+        }
+        if (!currentTile.flipped) {
+            currentTile.flip();
+        } else {
+            currentTile.clearHideTimeout();
+        }
+        this.selectedTileIndex = currentIndex;
     }
-    var currentTile = this.tiles[currentIndex];
-    if (this.selectedTileIndex) {
-        this.tiles[this.selectedTileIndex].setHideTimeout(this.tileHideDelay);
-    }
-    if (!currentTile.flipped) {
-        currentTile.flip();
-    } else {
-        currentTile.clearHideTimeout();
-    }
-    this.selectedTileIndex = currentIndex;
     return event.preventDefault();
 };
 

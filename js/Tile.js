@@ -1,4 +1,5 @@
-var Tile = function(width, height, modifier) {
+var Tile = function(numberOfRows, columnIndex, rowIndex, width, height) {
+    var modifier = columnIndex % 2 ? 0 : 1;
     this.tile = $(
         '<div class="flip" data-flipped="false">\
                         <div class="face front">\
@@ -9,9 +10,15 @@ var Tile = function(width, height, modifier) {
                         </div>\
                     </div>'
     );
-    this.modifier = modifier;
     this.flipped = false;
     this.hideTimeout = null;
+    this.index = (columnIndex * numberOfRows) + rowIndex;
+    this.north = this.index - 1;
+    this.south = this.index + 1;
+    this.northWest = this.index - numberOfRows + modifier - 1;
+    this.northEast = this.index + numberOfRows + modifier - 1;
+    this.southWest = this.northWest + 1;
+    this.southEast = this.northEast + 1;
     return this;
 };
 
