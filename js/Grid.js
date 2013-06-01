@@ -42,16 +42,38 @@ Grid.prototype.getTileIndex = function(mouseX, mouseY) {
     return (column * this.numberOfRows) + row;
 };
 
-Grid.prototype.processFlippingQueue = function(queue, flipped) {
-    var self = this, nextFlips = queue.shift(), tile;
-    $.each(nextFlips, function() {
+Grid.prototype.addNextTiles = function(nextRound, tile, centerTile) {
+    if (tile.index == centerTile.index) {
+        nextRound.push(tile.south, tile.southWest, tile.southEast, tile.north, tile.northEast, tile.northWest);
+    } else if (tile.index == centerTile.north) {
+        nextRound.push(tile.north, tile.northEast);
+    } else if (tile.index == centerTile.northEast) {
+        nextRound.push(tile.northEast, tile.southEast);
+    } else if (tile.index == centerTile.southEast) {
+        nextRound.push(tile.southEast, tile.south);
+    } else if (tile.index == centerTile.south) {
+        nextRound.push(tile.south, tile.southWest);
+    } else if (tile.index == centerTile.southWest) {
+        nextRound.push(tile.southWest, tile.northWest);
+    } else if (tile.index == centerTile.northWest) {
+        nextRound.push(tile.northWest, tile.north);
+    }
+};
+
+Grid.prototype.processTilesQueue = function(queue, centerTile) {
+    var self = this, nextTiles = queue.shift(), nextRound = [], tile;
+    $.each(nextTiles, function() {
         tile = self.tiles[this];
-        if (tile.flipped ? flipped : !flipped) {
-            tile.flip();
+        self.addNextTiles(nextRound, tile, centerTile);
+        if (!tile.flipped) {
+            tile.setHideTimeout(self.tileHideDelay).flip();
         }
     });
+    if (nextRound.length) {
+        queue.push(nextRound);
+    }
     if (queue.length) {
-        setTimeout($.proxy(this.processFlippingQueue, this, queue, flipped), 100);
+        setTimeout($.proxy(this.processTilesQueue, this, queue, centerTile), 125);
     }
 };
 
@@ -59,12 +81,9 @@ Grid.prototype.modeClicking = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY),
         currentTile = this.tiles[currentIndex],
         queue = [
-            [currentTile.south, currentTile.southWest],
-            [currentTile.southEast, currentIndex, currentTile.northWest],
-            [currentTile.northEast, currentTile.north]
+            [currentTile.index]
         ];
-    currentTile.flipped && queue.reverse();
-    this.processFlippingQueue(queue, currentTile.flipped);
+    this.processTilesQueue(queue, currentTile);
     return event.preventDefault();
 };
 

@@ -83,7 +83,7 @@ a.active:active {
   height: 88px;
   perspective: 180;
   transform-style: preserve-3d;
-  transition: all 0.4s ease;
+  transition: all 0.5s ease;
 }
 .face {
   height: 100%;
