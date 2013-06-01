@@ -18,7 +18,7 @@ body {
     border-radius: 6px;
     position: absolute;
     padding: 10px;
-    bottom: 10px;
+    top: 10px;
     right: 10px;
     width: 180px;
     z-index: 10;

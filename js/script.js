@@ -13,21 +13,9 @@
             columns[w] = $('<div class="flips"></div>');
             for (h = 0; h < ROWS_SIZE; ++h) {
                 index = (w * ROWS_SIZE) + h;
-                element = $(
-                    '<div class="flip" data-flipped="false" data-modifier="' 
-                        + (w % 2 ? 0 : 1) + '">\
-                        <div class="face front">\
-                            <img src="img/hexa.png" width="' 
-                                + TILE_WIDTH + '" height="' + TILE_HEIGHT + '">\
-                        </div>\
-                        <div class="face back">\
-                            <img src="img/hexa_flipped.png" width="' 
-                                + TILE_WIDTH + '" height="' + TILE_HEIGHT + '" />\
-                        </div>\
-                    </div>'
-                );
+                element = new Tile(TILE_WIDTH, TILE_HEIGHT, w % 2 ? 0 : 1);
                 FLIPS[index] = element;
-                columns[w].append(element);
+                columns[w].append(element.tile);
             }
         }
         return columns;
@@ -55,32 +43,13 @@
         return (column * ROWS_SIZE) + row;
     }
     
-    function flipTile(tile, flipped) {
-        tile.css('transform', 'rotate3d(1, 1, 0, ' + (flipped ? '0deg' : '180deg') + ')')
-            .data('flipped', !flipped);
-    }
-    
     function processFlippingQueue(queue, flipped) {
-        var index, nextFlips = queue.shift();
-        for (index in nextFlips) {
-            flipTile(FLIPS[nextFlips[index]], flipped);
-        }
+        var nextFlips = queue.shift();
+        $.each(nextFlips, function() {
+            FLIPS[this].flip();
+        });
         if (queue.length) {
             setTimeout(processFlippingQueue, 100, queue, flipped);
-        }
-    }
-    
-    function setTileHideTimeout() {
-        var previousTile = FLIPS[PREVIOUS_TILE_INDEX];
-        previousTile.data('hideDelay', setTimeout(function() {
-            flipTile(previousTile, true);
-        }, TILE_HIDE_DELAY));
-    }
-    
-    function clearTileHideTimeout(element) {
-        var hideDelay = element.data('hideDelay');
-        if (hideDelay) {
-            clearTimeout(hideDelay);
         }
     }
     
@@ -88,28 +57,27 @@
         var currentIndex = getTileIndex(e.pageX, e.pageY),
             currentTile = FLIPS[currentIndex];
         if (PREVIOUS_TILE_INDEX && PREVIOUS_TILE_INDEX !== currentIndex) {
-            setTileHideTimeout();
+            FLIPS[PREVIOUS_TILE_INDEX].setHideTimeout(TILE_HIDE_DELAY);
         }
-        clearTileHideTimeout(currentTile);
-        flipTile(currentTile, false);
+        currentTile.setHideTimeout(TILE_HIDE_DELAY);
+        currentTile.setFlipped(true).flip();
         PREVIOUS_TILE_INDEX = currentIndex;
         return false;
     }
 
     $(document).on('click', '#flips-container', function(e) {
         var currentIndex = getTileIndex(e.pageX, e.pageY),
-            currentTile = FLIPS[currentIndex],
-            flipped = currentTile.data('flipped') === true,
+            currentTile = FLIPS[currentIndex].tile,
             modifier = parseInt(currentTile.data('modifier'), 10),
             queue = [
                 [currentIndex + 1, currentIndex - ROWS_SIZE + modifier],
                 [currentIndex + ROWS_SIZE + modifier, currentIndex, currentIndex - ROWS_SIZE + modifier - 1],
                 [currentIndex + ROWS_SIZE + modifier - 1, currentIndex - 1]
             ];
-        flipped && queue.reverse();
-        processFlippingQueue(queue, flipped);
+        currentTile.flipped && queue.reverse();
+        processFlippingQueue(queue, currentTile.flipped);
         return false;
-    }).on('click', '#mouseDrawingBtn', function(e) {
+    }).on('click', '#mouseDrawingBtn', function() {
         var mouseDrawing = !$(this).hasClass('drawing'),
             newHtml = $(this).data(mouseDrawing ? 'stop' : 'start');
         $(this).toggleClass('drawing', mouseDrawing).html(newHtml);
@@ -117,15 +85,14 @@
             $('#flips-container').bind('mouseover', flipTilesWithEvent);
         } else {
             $('#flips-container').unbind('mouseover', flipTilesWithEvent);
-            setTileHideTimeout();
+            FLIPS[PREVIOUS_TILE_INDEX].setHideTimeout(TILE_HIDE_DELAY);
         }
-    }).on('click', '#resetBtn', function(e) {
+    }).on('click', '#resetBtn', function() {
         $(FLIPS).each(function() {
-            if ($(this).data('flipped') === false) {
+            if ($(this).flipped === false) {
                 return;
             }
-            clearTileHideTimeout($(this));
-            flipTile($(this), true);
+            $(this).clearHideTimeout().setFlipped(false).flip();
         });
     }).ready(function() {
         $('#viewport').css({
