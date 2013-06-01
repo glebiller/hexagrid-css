@@ -40,9 +40,12 @@ Grid.prototype.getTileIndex = function(mouseX, mouseY) {
 };
 
 Grid.prototype.processFlippingQueue = function(queue, flipped) {
-    var self = this, nextFlips = queue.shift();
+    var self = this, nextFlips = queue.shift(), tile;
     $.each(nextFlips, function() {
-        self.tiles[this].flip();
+        tile = self.tiles[this];
+        if (tile.flipped ? flipped : !flipped) {
+            tile.flip();
+        }
     });
     if (queue.length) {
         setTimeout($.proxy(this.processFlippingQueue, this), 100, queue, flipped);
@@ -51,8 +54,8 @@ Grid.prototype.processFlippingQueue = function(queue, flipped) {
 
 Grid.prototype.handleClick = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY),
-        currentTile = this.tiles[currentIndex].tile,
-        modifier = parseInt(currentTile.data('modifier'), 10),
+        currentTile = this.tiles[currentIndex],
+        modifier = parseInt(currentTile.modifier, 10),
         queue = [
             [currentIndex + 1, currentIndex - this.numberOfRows + modifier],
             [currentIndex + this.numberOfRows + modifier, currentIndex, currentIndex - this.numberOfRows + modifier - 1],
