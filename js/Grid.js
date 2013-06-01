@@ -57,11 +57,10 @@ Grid.prototype.processFlippingQueue = function(queue, flipped) {
 Grid.prototype.modeClicking = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY),
         currentTile = this.tiles[currentIndex],
-        modifier = parseInt(currentTile.modifier, 10),
         queue = [
-            [currentIndex + 1, currentIndex - this.numberOfRows + modifier],
-            [currentIndex + this.numberOfRows + modifier, currentIndex, currentIndex - this.numberOfRows + modifier - 1],
-            [currentIndex + this.numberOfRows + modifier - 1, currentIndex - 1]
+            [currentIndex + 1, currentIndex - this.numberOfRows + currentTile.modifier],
+            [currentIndex + this.numberOfRows + currentTile.modifier, currentIndex, currentIndex - this.numberOfRows + currentTile.modifier - 1],
+            [currentIndex + this.numberOfRows + currentTile.modifier - 1, currentIndex - 1]
         ];
     currentTile.flipped && queue.reverse();
     this.processFlippingQueue(queue, currentTile.flipped);
@@ -69,13 +68,18 @@ Grid.prototype.modeClicking = function(event) {
 };
 
 Grid.prototype.modeDrawing = function(event) {
-    var currentIndex = this.getTileIndex(event.pageX, event.pageY),
-        currentTile = this.tiles[currentIndex];
-    if (this.selectedTileIndex && this.selectedTileIndex !== currentIndex) {
+    var currentIndex = this.getTileIndex(event.pageX, event.pageY);
+    if (this.selectedTileIndex === currentIndex) {
+        return;
+    }
+    var currentTile = this.tiles[currentIndex];
+    if (this.selectedTileIndex) {
         this.tiles[this.selectedTileIndex].setHideTimeout(this.tileHideDelay);
     }
     if (!currentTile.flipped) {
         currentTile.flip();
+    } else {
+        currentTile.clearHideTimeout();
     }
     this.selectedTileIndex = currentIndex;
     return event.preventDefault();
