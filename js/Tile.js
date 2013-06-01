@@ -1,7 +1,6 @@
 var Tile = function(width, height, modifier) {
     this.tile = $(
-        '<div class="flip" data-flipped="false" data-modifier="'
-            + modifier + '">\
+        '<div class="flip" data-flipped="false">\
                         <div class="face front">\
                             <img src="/img/hexa.png" width="'
             + width + '" height="' + height + '">\
@@ -12,6 +11,7 @@ var Tile = function(width, height, modifier) {
                         </div>\
                     </div>'
     );
+    this.modifier = modifier;
     this.flipped = false;
     this.hideTimeout = null;
     return this;
