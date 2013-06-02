@@ -3,10 +3,10 @@ var Tile = function(numberOfRows, columnIndex, rowIndex, width, height) {
     this.tile = $(
         '<div class="flip" data-flipped="false">\
             <div class="face front">\
-                <img src="/img/hexa.png" width="' + width + '" height="' + height + '">\
+                <img src="img/hexa.png" width="' + width + '" height="' + height + '">\
             </div>\
             <div class="face back">\
-                <img src="/img/hexa_flipped.png" width="' + width + '" height="' + height + '" />\
+                <img src="img/hexa_flipped.png" width="' + width + '" height="' + height + '" />\
             </div>\
         </div>'
     );
