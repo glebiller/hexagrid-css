@@ -1,25 +1,77 @@
+/**
+ * The Grid constructor.
+ *
+ * @param viewport {Object} The viewport.
+ * @param tileWidth {number} The tile width.
+ * @param tileHeight {number} The tile Height.
+ * @param tileHideDelay {number} The delay before hidding a tile.
+ * @constructor
+ */
 var Grid = function(viewport, tileWidth, tileHeight, tileHideDelay) {
+    /**
+     * @type {null|Object}
+     */
     this.container = null;
+    /**
+     * @type {Array.<Tile>}
+     */
     this.tiles = [];
+    /**
+     * @const
+     * @type {number}
+     */
     this.tileWidth = tileWidth;
+    /**
+     * @const
+     * @type {number}
+     */
     this.threeQuarterTileWidth = tileWidth * 3 / 4;
+    /**
+     * @const
+     * @type {number}
+     */
     this.tileHeight = tileHeight;
+    /**
+     * @const
+     * @type {number}
+     */
     this.halfTileHeight = tileHeight / 2;
+    /**
+     * @const
+     * @type {number}
+     */
     this.quarterTileHeight = tileHeight / 4;
+    /**
+     * @const
+     * @type {number}
+     */
     this.numberOfRows = Math.round(viewport.height() / this.tileHeight) + 1;
+    /**
+     * @const
+     * @type {number}
+     */
     this.numberOfColumns = Math.round(viewport.width() / this.threeQuarterTileWidth) + 1;
-    this.tileHideDelay = tileHideDelay;
+    /**
+     * @type {null|number}
+     */
     this.selectedTileIndex = null;
     var w, h, tile;
     for (w = 0; w < this.numberOfColumns; ++w) {
         for (h = 0; h < this.numberOfRows; ++h) {
-            tile = new Tile(this.numberOfRows, w, h, this.tileWidth, this.tileHeight);
+            tile = new Tile(this.numberOfRows, w, h, this.tileWidth, this.tileHeight, tileHideDelay);
             this.tiles[tile.index] = tile;
         }
     }
-    return this;
 };
 
+/**
+ * Get the tile index based on mouse coordinates.
+ *
+ * @private
+ * @param mouseX {number} The mouse X coordinate.
+ * @param mouseY {number} The mouse Y coordinate.
+ * @returns {number} The tile index.
+ */
 Grid.prototype.getTileIndex = function(mouseX, mouseY) {
     var lineX = mouseX + this.halfTileHeight,
         column = Math.floor(lineX / this.threeQuarterTileWidth),
@@ -42,55 +94,77 @@ Grid.prototype.getTileIndex = function(mouseX, mouseY) {
     return (column * this.numberOfRows) + row;
 };
 
-Grid.prototype.addNextTiles = function(nextRound, tile, centerTile) {
+/**
+ * Add the next tiles to flip to the queue.
+ *
+ * @private
+ * @param tilesToQueue {Array.<number>} The array of tiles index to flip next.
+ * @param tile {Tile} The current tile to compute the next tiles to flip.
+ * @param centerTile {Tile} The center tile which has been clicked first.
+ */
+Grid.prototype.addNextTiles = function(tilesToQueue, tile, centerTile) {
     if (!tile) {
         return;
     }
     switch (tile.index) {
         case centerTile.index:
-            nextRound.push(tile.south, tile.southWest, tile.southEast, tile.north, tile.northEast, tile.northWest);
+            tilesToQueue.push(tile.south, tile.southWest, tile.southEast, tile.north, tile.northEast, tile.northWest);
             break;
         case centerTile.north:
-            nextRound.push(tile.north, tile.northEast);
+            tilesToQueue.push(tile.north, tile.northEast);
             break;
         case centerTile.northEast:
-            nextRound.push(tile.northEast, tile.southEast);
+            tilesToQueue.push(tile.northEast, tile.southEast);
             break;
         case centerTile.southEast:
-            nextRound.push(tile.southEast, tile.south);
+            tilesToQueue.push(tile.southEast, tile.south);
             break;
         case centerTile.south:
-            nextRound.push(tile.south, tile.southWest);
+            tilesToQueue.push(tile.south, tile.southWest);
             break;
         case centerTile.southWest:
-            nextRound.push(tile.southWest, tile.northWest);
+            tilesToQueue.push(tile.southWest, tile.northWest);
             break;
         case centerTile.northWest:
-            nextRound.push(tile.northWest, tile.north);
+            tilesToQueue.push(tile.northWest, tile.north);
             break;
     }
 };
 
+/**
+ * Process the tiles queue and flip all the tiles in the first element
+ * of the queue.
+ *
+ * @private
+ * @this {Grid}
+ * @param queue {Array.<Array.<number>>} The tiles queue to process.
+ * @param centerTile {Tile} The center tile which has been clicked first.
+ */
 Grid.prototype.processTilesQueue = function(queue, centerTile) {
-    var self = this, nextTiles = queue.shift(), nextRound = [], tile;
+    var self = this, nextTiles = queue.shift(), tilesToQueue = [], tile;
     $.each(nextTiles, function() {
         tile = self.tiles[this];
         if (!tile) {
             return;
         }
-        self.addNextTiles(nextRound, tile, centerTile);
-        if (!tile.flipped) {
-            tile.setHideTimeout(self.tileHideDelay).flip();
-        }
+        self.addNextTiles(tilesToQueue, tile, centerTile);
+        tile.flip(true);
     });
-    if (nextRound.length) {
-        queue.push(nextRound);
+    if (tilesToQueue.length) {
+        queue.push(tilesToQueue);
     }
     if (queue.length) {
         setTimeout($.proxy(this.processTilesQueue, this, queue, centerTile), 125);
     }
 };
 
+/**
+ * The Clicking mode handler.
+ *
+ * @expose
+ * @param event {Object} The mouse click event.
+ * @returns {boolean}
+ */
 Grid.prototype.modeClicking = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY),
         currentTile = this.tiles[currentIndex],
@@ -101,33 +175,37 @@ Grid.prototype.modeClicking = function(event) {
     return event.preventDefault();
 };
 
+/**
+ * The Drawing mode handler.
+ *
+ * @expose
+ * @param event {Object} The mouse move event.
+ * @returns {boolean}
+ */
 Grid.prototype.modeDrawing = function(event) {
     var currentIndex = this.getTileIndex(event.pageX, event.pageY);
     if (this.selectedTileIndex !== currentIndex) {
-        var currentTile = this.tiles[currentIndex];
-        if (this.selectedTileIndex) {
-            this.tiles[this.selectedTileIndex].setHideTimeout(this.tileHideDelay);
-        }
-        if (!currentTile.flipped) {
-            currentTile.flip();
-        } else {
-            currentTile.clearHideTimeout();
-        }
         this.selectedTileIndex = currentIndex;
+        this.tiles[currentIndex].flip(true);
     }
     return event.preventDefault();
 };
 
+/**
+ * Reset all tiles to their original state.
+ */
 Grid.prototype.reset = function() {
     $(this.tiles).each(function() {
-        if (!this.flipped) {
-            return;
-        }
-        this.clearHideTimeout().flip();
+        this.flip(false);
     });
-    return this;
 };
 
+/**
+ * Generate the Grid HTML into the container.
+ *
+ * @param container {Object} The container that will receive the HTML.
+ * @returns Grid
+ */
 Grid.prototype.generate = function(container) {
     this.container = container;
     var columns = [], w, h;

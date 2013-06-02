@@ -1,0 +1,2 @@
+java -jar compiler.jar --compilation_level ADVANCED_OPTIMIZATIONS --externs externs/jQuery.js --js_output_file ../js/bin/script.js \
+    --js ../js/Tile.js --js ../js/Grid.js --js ../js/Menu.js ../js/Main.js
