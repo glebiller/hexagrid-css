@@ -43,20 +43,31 @@ Grid.prototype.getTileIndex = function(mouseX, mouseY) {
 };
 
 Grid.prototype.addNextTiles = function(nextRound, tile, centerTile) {
-    if (tile.index == centerTile.index) {
-        nextRound.push(tile.south, tile.southWest, tile.southEast, tile.north, tile.northEast, tile.northWest);
-    } else if (tile.index == centerTile.north) {
-        nextRound.push(tile.north, tile.northEast);
-    } else if (tile.index == centerTile.northEast) {
-        nextRound.push(tile.northEast, tile.southEast);
-    } else if (tile.index == centerTile.southEast) {
-        nextRound.push(tile.southEast, tile.south);
-    } else if (tile.index == centerTile.south) {
-        nextRound.push(tile.south, tile.southWest);
-    } else if (tile.index == centerTile.southWest) {
-        nextRound.push(tile.southWest, tile.northWest);
-    } else if (tile.index == centerTile.northWest) {
-        nextRound.push(tile.northWest, tile.north);
+    if (!tile) {
+        return;
+    }
+    switch (tile.index) {
+        case centerTile.index:
+            nextRound.push(tile.south, tile.southWest, tile.southEast, tile.north, tile.northEast, tile.northWest);
+            break;
+        case centerTile.north:
+            nextRound.push(tile.north, tile.northEast);
+            break;
+        case centerTile.northEast:
+            nextRound.push(tile.northEast, tile.southEast);
+            break;
+        case centerTile.southEast:
+            nextRound.push(tile.southEast, tile.south);
+            break;
+        case centerTile.south:
+            nextRound.push(tile.south, tile.southWest);
+            break;
+        case centerTile.southWest:
+            nextRound.push(tile.southWest, tile.northWest);
+            break;
+        case centerTile.northWest:
+            nextRound.push(tile.northWest, tile.north);
+            break;
     }
 };
 
@@ -64,6 +75,9 @@ Grid.prototype.processTilesQueue = function(queue, centerTile) {
     var self = this, nextTiles = queue.shift(), nextRound = [], tile;
     $.each(nextTiles, function() {
         tile = self.tiles[this];
+        if (!tile) {
+            return;
+        }
         self.addNextTiles(nextRound, tile, centerTile);
         if (!tile.flipped) {
             tile.setHideTimeout(self.tileHideDelay).flip();

@@ -1,24 +1,24 @@
 var Tile = function(numberOfRows, columnIndex, rowIndex, width, height) {
-    var modifier = columnIndex % 2 ? 0 : 1;
+    var modifier = (columnIndex % 2) ? 0 : 1;
     this.tile = $(
         '<div class="flip" data-flipped="false">\
-                        <div class="face front">\
-                            <img src="/img/hexa.png" width="' + width + '" height="' + height + '">\
-                        </div>\
-                        <div class="face back">\
-                            <img src="/img/hexa_flipped.png" width="' + width + '" height="' + height + '" />\
-                        </div>\
-                    </div>'
+            <div class="face front">\
+                <img src="/img/hexa.png" width="' + width + '" height="' + height + '">\
+            </div>\
+            <div class="face back">\
+                <img src="/img/hexa_flipped.png" width="' + width + '" height="' + height + '" />\
+            </div>\
+        </div>'
     );
     this.flipped = false;
     this.hideTimeout = null;
     this.index = (columnIndex * numberOfRows) + rowIndex;
-    this.north = this.index - 1;
-    this.south = this.index + 1;
-    this.northWest = this.index - numberOfRows + modifier - 1;
-    this.northEast = this.index + numberOfRows + modifier - 1;
-    this.southWest = this.northWest + 1;
-    this.southEast = this.northEast + 1;
+    this.north = (rowIndex === 0) ? -1 : this.index - 1;
+    this.south = (rowIndex === numberOfRows - 1) ? -1 : this.index + 1;
+    this.northWest = (rowIndex === 0 && modifier === 0) ? -1 : this.index - numberOfRows + modifier - 1;
+    this.northEast = (rowIndex === 0 && modifier === 0) ? -1 : this.index + numberOfRows + modifier - 1;
+    this.southWest = (rowIndex === numberOfRows - 1 && modifier === 1) ? -1 : this.index - numberOfRows + modifier;
+    this.southEast = (rowIndex === numberOfRows - 1 && modifier === 1) ? -1 : this.index + numberOfRows + modifier;
     return this;
 };
 
