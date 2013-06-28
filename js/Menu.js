@@ -20,8 +20,10 @@ var Menu = function(grid) {
      */
     this.elements = $('<a href="javascript:void(0);" class="modeClicking">Clicking Mode</a>').click($.proxy(this.switchMode, this, 'click', 'modeClicking'))
         .add($('<a href="javascript:void(0);" class="modeDrawing">Drawing Mode</a>').click($.proxy(this.switchMode, this, 'mouseover', 'modeDrawing')))
-        .add($('<hr />'))
-        .add($('<a href="javascript:void(0);">Reset</a>').click($.proxy(this.grid.reset, this.grid)));
+        .add('<hr />')
+        .add($('<a href="javascript:void(0);">Reset</a>').click($.proxy(this.grid.reset, this.grid)))
+        .add('<hr />')
+        .add('<a href="https://github.com/Kissy/hexagrid-css" target="_blank">GitHub</a>');
 };
 
 /**
